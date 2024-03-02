@@ -4,6 +4,8 @@ package ml
 // #include "ml.h"
 import "C"
 import "unsafe"
+import "fmt"
+
 // Import functions from wasi:nn/tensor
 type WasiNnTensorTensorDimensions = uint32
 type WasiNnTensorTensorTypeKind int
@@ -295,7 +297,7 @@ func NewError(code WasiNnErrorsErrorCode, data string) WasiNnErrorsError {
   var lower_data C.ml_string_t
   
   // use unsafe.Pointer to avoid copy
-  lower_data.ptr = (*C.uchar)(unsafe.Pointer(C.CString(data)))
+  lower_data.ptr = (*uint8)(unsafe.Pointer(C.CString(data)))
   lower_data.len = C.size_t(len(data))
   ret := C.wasi_nn_errors_constructor_error(lower_code , &lower_data )
   var lift_ret WasiNnErrorsError
@@ -369,7 +371,7 @@ func (self WasiNnInferenceGraphExecutionContext) SetInput(name string, tensor Wa
   var lower_name C.ml_string_t
   
   // use unsafe.Pointer to avoid copy
-  lower_name.ptr = (*C.uchar)(unsafe.Pointer(C.CString(name)))
+  lower_name.ptr = (*uint8)(unsafe.Pointer(C.CString(name)))
   lower_name.len = C.size_t(len(name))
   var lower_tensor C.wasi_nn_inference_own_tensor_t
   lower_tensor.__handle = C.int32_t(tensor)
@@ -410,7 +412,7 @@ func (self WasiNnInferenceGraphExecutionContext) GetOutput(name string) Result[W
   var lower_name C.ml_string_t
   
   // use unsafe.Pointer to avoid copy
-  lower_name.ptr = (*C.uchar)(unsafe.Pointer(C.CString(name)))
+  lower_name.ptr = (*uint8)(unsafe.Pointer(C.CString(name)))
   lower_name.len = C.size_t(len(name))
   var ret C.wasi_nn_inference_result_own_tensor_own_error_t
   C.wasi_nn_inference_method_graph_execution_context_get_output(lower_self , &lower_name , &ret )
@@ -627,21 +629,25 @@ func WasiNnGraphLoadByName(name string) Result[WasiNnGraphGraph, WasiNnGraphErro
   var lower_name C.ml_string_t
   
   // use unsafe.Pointer to avoid copy
-  lower_name.ptr = (*C.uchar)(unsafe.Pointer(C.CString(name)))
+  lower_name.ptr = (*uint8)(unsafe.Pointer(C.CString(name)))
   lower_name.len = C.size_t(len(name))
   var ret C.wasi_nn_graph_result_own_graph_own_error_t
   C.wasi_nn_graph_load_by_name(&lower_name , &ret )
   var lift_ret Result[WasiNnGraphGraph, WasiNnGraphError]
   if ret.is_err {
+    fmt.Println("here error")
+
     lift_ret_ptr := *(*C.wasi_nn_graph_own_error_t)(unsafe.Pointer(&ret.val))
     var lift_ret_val WasiNnGraphError
     lift_ret_val = WasiNnGraphError(lift_ret_ptr.__handle)
     
     lift_ret.SetErr(lift_ret_val)
   } else {
+    fmt.Println("here")
     lift_ret_ptr := *(*C.wasi_nn_graph_own_graph_t)(unsafe.Pointer(&ret.val))
     var lift_ret_val WasiNnGraphGraph
     lift_ret_val = WasiNnGraphGraph(lift_ret_ptr.__handle)
+    
     lift_ret.Set(lift_ret_val)
   }
   return lift_ret

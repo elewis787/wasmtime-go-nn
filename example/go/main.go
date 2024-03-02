@@ -2,17 +2,15 @@ package main
 
 import (
 	"fmt"
-	"log"
 
-	"github.com/elewis787/wasmtime-go-nn/ml"
+	"github.com/elewis787/wasmtime-go-nn/example/go/ml"
 )
 
 func main() {
-	res := ml.WasiNnGraphLoadByName("value")
+	res := ml.WasiNnGraphLoadByName("/Users/elewis/Projects/go/src/github.com/elewis787/wasmtime-go-nn/example/models/Mixtral-8x7B-Instruct-v0.1-Q2_K.gguf")
 	if res.IsOk() {
-		graph := res.Unwrap()
-		fmt.Println(graph)
+		fmt.Println("value")
 	} else {
-		log.Fatal(res.UnwrapErr())
+		fmt.Println("error")
 	}
 }
