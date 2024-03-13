@@ -7,7 +7,8 @@ import (
 
 	"github.com/bytecodealliance/wasmtime-go/v18"
 	"github.com/elewis787/wasmtime-go-nn/ml"
-	llama "github.com/go-skynet/go-llama.cpp"
+	"github.com/jmorganca/ollama/api"
+	"github.com/jmorganca/ollama/llm"
 )
 
 func main() {
@@ -42,19 +43,30 @@ func main() {
 			len := args[1].I32()
 			data := mem.UnsafeData(caller)[ptr : ptr+len]
 			name := string(data)
+
+			adapters := []string{}
+			projectors := []string{}
+			opts := api.DefaultOptions()
+
+			_, err := llm.New(name, adapters, projectors, opts)
+			if err != nil {
+				fmt.Println("Loading the model failed:", err.Error())
+				os.Exit(1)
+			}
+			fmt.Println("Model loaded")
 			var (
-				//threads   = 4
-				//tokens    = 128
-				gpulayers = 0
-				//seed      = -1
+			//threads   = 4
+			//tokens    = 128
+			// gpulayers = 0
+			//seed      = -1
 			)
-			// This is where LLAMA CPP lives
+			/*// This is where LLAMA CPP lives
 			_, err := llama.New(name, llama.EnableF16Memory, llama.SetContext(128), llama.EnableEmbeddings, llama.SetGPULayers(gpulayers))
 			if err != nil {
 				fmt.Println("Loading the model failed:", err.Error())
 				os.Exit(1)
 			}
-
+			*/
 			res := &ml.Result[ml.WasiNnGraphGraph, ml.WasiNnGraphError]{}
 			res.Set(0)
 			fmt.Println(res)
